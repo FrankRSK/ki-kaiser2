@@ -1,0 +1,8 @@
+﻿    • Historische Namen: Akteure sollen zufällig Namen aus einer neu anzulegenden Liste historischer Herrscher zugewiesen bekommen.
+    • UI-Verbesserung: Die Felder für die Schiffe werden aktuell rechteckig (monitorbedingt) dargestellt, sollen aber zwingend quadratisch sein, um die Optik zu verbessern.
+    • Aggressionslevel: Wenn die "verbale Aggressivität" hoch eingestellt ist, sollen die KI-Akteure echte, derbe Beschimpfungen nutzen und nicht nur weichgespültes "Blabla" von sich geben.
+    • Stimmenzuordnung: Integration der Funktion aus deinem Podcast-Skript. Verfügbare Stimmen (inklusive der selbst generierten) sollen ausgelesen und den Spielern zugewiesen werden können. Im Verzeichnis "/var/www/html/tts" ist eine fuktionierende Webanwendung, die auf QwenTTS zugreift, dort kannst Du die Funktionen abschauen.
+    • Neues Wirtschaftselement "Land & Korn": * Einführung von Land als Ressource.
+        ◦ Preise für Land und Korn sollen dynamisch schwanken (sinken bei hohem Verkauf, steigen bei hohem Kauf + zufällige Marktschwankungen), um Spekulation als Strategie zu ermöglichen.
+    • Rebellions-Logik: * Zu hohe Unzufriedenheit im Volk führt zu Rebellionen, was Ressourcen kostet.
+        ◦ Bei einer kritischen Grenze der Unzufriedenheit wird der Herrscher abgesetzt und durch einen neuen, zufälligen Herrscher ersetzt. Dieser muss dann mit den spärlichen Restressourcen des laufenden Spiels klarkommen.
