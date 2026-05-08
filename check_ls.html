@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"></head>
+<body>
+<pre id="out"></pre>
+<script>
+const out = document.getElementById('out');
+const keys = ['kiDuellSettings','kiDuellGameState'];
+keys.forEach(k => {
+  const v = localStorage.getItem(k);
+  if (v) {
+    try {
+      const d = JSON.parse(v);
+      out.textContent += k + ':\n' + JSON.stringify(d.settings || d.state?.settings, null, 2) + '\n\n';
+    } catch(e) {
+      out.textContent += k + ': PARSE-FEHLER: ' + e.message + '\n';
+    }
+  } else {
+    out.textContent += k + ': (leer)\n';
+  }
+});
+</script>
+</body></html>
