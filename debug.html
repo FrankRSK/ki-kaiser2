@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><title>Debug</title></head>
+<body>
+<div id="player1ModelRow" style="display:none;">
+  <select id="player1Model"></select>
+</div>
+<div id="player2ModelRow" style="display:none;">
+  <select id="player2Model"></select>
+</div>
+<div id="output" style="font-family:monospace;white-space:pre;"></div>
+<script>
+const out = document.getElementById('output');
+function log(msg) { out.textContent += msg + '\n'; }
+
+log('1. DOM bereit: ' + !!document.getElementById('player1Model'));
+log('2. Starte fetch...');
+
+fetch('proxy.php', {
+  method: 'POST',
+  headers: {'Content-Type':'application/json'},
+  body: JSON.stringify({endpoint:'ollama_models'})
+})
+.then(r => {
+  log('3. Fetch Status: ' + r.status);
+  return r.json();
+})
+.then(data => {
+  log('4. Modelle empfangen: ' + (data.models||[]).length);
+  log('5. Erste 3: ' + (data.models||[]).slice(0,3).map(m=>m.name).join(', '));
+
+  const select = document.getElementById('player1Model');
+  select.innerHTML = '';
+  (data.models||[]).forEach(m => {
+    const o = document.createElement('option');
+    o.value = m.name; o.textContent = m.name;
+    select.appendChild(o);
+  });
+
+  const row = document.getElementById('player1ModelRow');
+  row.style.display = 'flex';
+  log('6. Dropdown befüllt, display=flex gesetzt');
+  log('7. Select hat ' + select.options.length + ' Einträge');
+  log('8. Row style.display = ' + row.style.display);
+})
+.catch(e => log('FEHLER: ' + e.message));
+</script>
+</body>
+</html>
