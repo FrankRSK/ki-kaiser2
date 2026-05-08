@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KI-Duell - Ressourcenstrategie & Seekrieg</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="game-container">
+    <!-- Spieler 1 -->
+    <div class="player-section p1">
+      <div class="player-header p1">Spieler 1</div>
+      <div class="resources">
+        <div class="resource-item">
+          <div class="resource-label">Korn</div>
+          <div class="resource-value korn" id="player1Korn">100</div>
+        </div>
+        <div class="resource-item">
+          <div class="resource-label">Gold</div>
+          <div class="resource-value gold" id="player1Gold">50</div>
+        </div>
+        <div class="resource-item">
+          <div class="resource-label">Bevölkerung</div>
+          <div class="resource-value bevoelkerung" id="player1Bevoelkerung">100</div>
+        </div>
+        <div class="resource-item">
+          <div class="resource-label">Zufriedenheit</div>
+          <div class="resource-value zufriedenheit" id="player1Zufriedenheit">100%</div>
+        </div>
+        <div class="resource-item">
+          <div class="resource-label">Land</div>
+          <div class="resource-value land" id="player1Land">20</div>
+        </div>
+      </div>
+      <div class="fleet-status">
+        <div class="resource-label">Flotte</div>
+        <div id="player1Flotte">Nein</div>
+      </div>
+      <div class="grid-container">
+        <div id="grid1" class="grid"></div>
+      </div>
+    </div>
+
+    <!-- Zentrale Konsole -->
+    <div class="center-console">
+      <div class="console-section">
+        <div class="console-title">Spielleiter</div>
+        <div class="controls">
+          <button class="btn btn-start" id="btnStart">Start</button>
+          <button class="btn btn-pause" id="btnPause">Pause</button>
+          <button class="btn btn-reset" id="btnReset">Reset</button>
+        </div>
+        <div class="year-display">
+          <div class="resource-label">Jahr</div>
+          <span id="currentYear">1</span>
+        </div>
+        <div class="markt-display">
+          <div class="markt-row">
+            <span class="resource-label">Land-Preis:</span>
+            <span id="marktLandPreis" class="markt-value">10.0</span> Gold
+          </div>
+          <div class="markt-row">
+            <span class="resource-label">Korn-Preis:</span>
+            <span id="marktKornPreis" class="markt-value">1.00</span> Gold
+          </div>
+        </div>
+        <button class="btn btn-settings" id="btnOpenSettings">&#9881; Einstellungen</button>
+        <button class="btn btn-rules" id="btnOpenRules">&#10067; Spielregeln</button>
+        <button class="btn btn-raw" id="toggleRaw">Rohdaten anzeigen</button>
+      </div>
+
+      <div class="console-section">
+        <div class="console-title">Spiel-Log</div>
+        <div class="game-log" id="gameLog"></div>
+        <div class="raw-data" id="rawData"></div>
+      </div>
+    </div>
+
+    <!-- Spieler 2 -->
+    <div class="player-section p2">
+      <div class="player-header p2">Spieler 2</div>
+      <div class="resources">
+        <div class="resource-item">
+          <div class="resource-label">Korn</div>
+          <div class="resource-value korn" id="player2Korn">100</div>
+        </div>
+        <div class="resource-item">
+          <div class="resource-label">Gold</div>
+          <div class="resource-value gold" id="player2Gold">50</div>
+        </div>
+        <div class="resource-item">
+          <div class="resource-label">Bevölkerung</div>
+          <div class="resource-value bevoelkerung" id="player2Bevoelkerung">100</div>
+        </div>
+        <div class="resource-item">
+          <div class="resource-label">Zufriedenheit</div>
+          <div class="resource-value zufriedenheit" id="player2Zufriedenheit">100%</div>
+        </div>
+        <div class="resource-item">
+          <div class="resource-label">Land</div>
+          <div class="resource-value land" id="player2Land">20</div>
+        </div>
+      </div>
+      <div class="fleet-status">
+        <div class="resource-label">Flotte</div>
+        <div id="player2Flotte">Nein</div>
+      </div>
+      <div class="grid-container">
+        <div id="grid2" class="grid"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- End Screen Overlay -->
+  <div class="end-overlay" id="endOverlay">
+    <div class="end-screen">
+      <h2 id="endWinner">Spieler X gewinnt!</h2>
+      <p id="endReason">Militärsieg</p>
+      <p id="endYear">Jahre gespielt: 1</p>
+      <button class="btn btn-reset" onclick="game.reset(); document.getElementById('endOverlay').style.display='none';">Neues Spiel</button>
+    </div>
+  </div>
+
+  <!-- Regelwerk-Modal -->
+  <div class="modal-overlay" id="rulesModal">
+    <div class="modal-box modal-box--wide">
+      <div class="modal-header">
+        <span class="modal-title">Spielregeln</span>
+        <button class="modal-close" id="btnCloseRules">&times;</button>
+      </div>
+      <div class="modal-body rules-body">
+
+        <h3>Ziel</h3>
+        <p>Baue dein Reich auf und kaufe eine <strong>Flotte</strong> (400 Gold). Mit ihr kannst du den Gegner im Seegefecht besiegen. Wer zuerst alle Schiffe des Gegners versenkt, gewinnt. Alternativ gewinnt, wessen Gegner wirtschaftlich kollabiert.</p>
+
+        <h3>Die Kernformel</h3>
+        <p class="formula">Korn &rarr; Volk &rarr; Land bewirtschaften &rarr; Steuern &amp; Ernte &rarr; Flotte &rarr; Sieg</p>
+
+        <div class="rules-columns">
+          <div>
+            <h3>Wirtschaft pro Runde</h3>
+            <table class="rules-table">
+              <tr><th>Aktion</th><th>Erklärung</th></tr>
+              <tr><td><strong>Steuern</strong></td><td>0–2 Gold pro Einwohner. Wichtigste Einnahmequelle. Zu hohe Steuern senken Zufriedenheit.</td></tr>
+              <tr><td><strong>Ernährung</strong></td><td>Mind. 1,2 Korn/Person nötig. Darunter: Hungersnot (−12% Bevölkerung). Darüber: Wachstum (+5%).</td></tr>
+              <tr><td><strong>Aussaat</strong></td><td>Saatgut aus Korn-Vorrat. Ernte = Fläche × 4,0 × Wetter (0,7–1,3). Max. Fläche durch Arbeitskraft begrenzt.</td></tr>
+              <tr><td><strong>Handel</strong></td><td>Überschuss-Korn zu Gold (0,3 Gold/Korn). Nur nach Ernährung und Aussaat möglich.</td></tr>
+              <tr><td><strong>Landkauf</strong></td><td>Mehr Land = mehr Erntemöglichkeit und höhere Tragkapazität.</td></tr>
+            </table>
+
+            <h3>Land &amp; Bevölkerung</h3>
+            <table class="rules-table">
+              <tr><th>Regel</th><th>Wert</th></tr>
+              <tr><td>1 Person bewirtschaftet max.</td><td>5 Land</td></tr>
+              <tr><td>Tragkapazität</td><td>10 Personen / Land</td></tr>
+              <tr><td>Saatgut pro Land</td><td>0,5 Korn</td></tr>
+              <tr><td>Ernte pro Land</td><td>4,0 Korn × Wetter</td></tr>
+              <tr><td>Flotten-Besatzung</td><td>10 Personen gebunden</td></tr>
+            </table>
+          </div>
+          <div>
+            <h3>Flotte</h3>
+            <table class="rules-table">
+              <tr><th>Parameter</th><th>Wert</th></tr>
+              <tr><td>Kaufpreis</td><td>400 Gold</td></tr>
+              <tr><td>Unterhalt</td><td>20 Korn / Runde</td></tr>
+              <tr><td>Besatzung</td><td>10 Personen (weniger Arbeiter!)</td></tr>
+              <tr><td>Verfall</td><td>Nach 2 Jahren ohne Unterhalt sinkt 1 Schiff</td></tr>
+              <tr><td>Kampf</td><td>Nur wenn <em>beide</em> Spieler eine Flotte haben</td></tr>
+            </table>
+
+            <h3>Sieg &amp; Niederlage</h3>
+            <table class="rules-table">
+              <tr><th>Bedingung</th><th>Folge</th></tr>
+              <tr><td>Alle Schiffe des Gegners versenkt</td><td>Militärsieg</td></tr>
+              <tr><td>Gegner hat 5 Jahre allein eine Flotte</td><td>Niederlage durch Flotten-Dominanz</td></tr>
+              <tr><td>Bevölkerung ≤ 5 oder 3 Rebellionsjahre</td><td>Wirtschaftlicher Kollaps</td></tr>
+            </table>
+
+            <h3>Zufriedenheit &amp; Rebellion</h3>
+            <table class="rules-table">
+              <tr><th>Schwelle</th><th>Wirkung</th></tr>
+              <tr><td>&lt; 30 %</td><td>Rebellion: Ressourcenverlust jede Runde</td></tr>
+              <tr><td>&lt; 10 % (2× hintereinander)</td><td>Herrscherwechsel, Ressourcen halbiert</td></tr>
+            </table>
+
+            <h3>Startbedingungen</h3>
+            <table class="rules-table">
+              <tr><td>Korn</td><td>250</td></tr>
+              <tr><td>Gold</td><td>100</td></tr>
+              <tr><td>Bevölkerung</td><td>100</td></tr>
+              <tr><td>Land</td><td>40</td></tr>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Einstellungs-Modal -->
+  <div class="modal-overlay" id="settingsModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <span class="modal-title">Einstellungen</span>
+        <button class="modal-close" id="btnCloseSettings">&times;</button>
+      </div>
+      <div class="modal-body">
+
+        <button class="btn btn-skip" id="skipAudio">Audio überspringen</button>
+
+        <div class="modal-columns">
+          <!-- Spieler 1 -->
+          <div>
+            <div class="console-title" style="margin-bottom:8px;">Spieler 1</div>
+            <div class="settings-group">
+              <div class="setting-row">
+                <label>Strateg. Aggr.</label>
+                <input type="range" id="player1Strategic" min="0" max="100" value="50">
+                <span id="player1StrategicLabel">50</span>
+              </div>
+              <div class="setting-row">
+                <label>Verbale Aggr.</label>
+                <input type="range" id="player1Verbal" min="0" max="100" value="50">
+                <span id="player1VerbalLabel">50</span>
+              </div>
+              <div class="setting-row">
+                <label>API-Provider</label>
+                <select id="player1ApiProvider">
+                  <option value="ollama">Ollama (lokal)</option>
+                  <option value="openai">OpenAI</option>
+                  <option value="anthropic">Anthropic</option>
+                  <option value="deepseek">DeepSeek</option>
+                </select>
+              </div>
+              <div class="setting-row" id="player1ModelRow" style="display:none;">
+                <label>Ollama Modell</label>
+                <select id="player1Model"></select>
+              </div>
+              <div class="setting-row">
+                <label>API-Key</label>
+                <input type="password" id="player1ApiKey" placeholder="">
+              </div>
+              <div class="setting-row">
+                <label>Stimm-Typ</label>
+                <select id="player1VoiceType">
+                  <option value="preset">Preset</option>
+                  <option value="clone">Voice Clone</option>
+                </select>
+              </div>
+              <div class="setting-row">
+                <label>TTS-Stimme</label>
+                <select id="player1VoiceSelect">
+                  <option value="">— Stimme laden... —</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Spieler 2 -->
+          <div>
+            <div class="console-title" style="margin-bottom:8px;">Spieler 2</div>
+            <div class="settings-group">
+              <div class="setting-row">
+                <label>Strateg. Aggr.</label>
+                <input type="range" id="player2Strategic" min="0" max="100" value="50">
+                <span id="player2StrategicLabel">50</span>
+              </div>
+              <div class="setting-row">
+                <label>Verbale Aggr.</label>
+                <input type="range" id="player2Verbal" min="0" max="100" value="50">
+                <span id="player2VerbalLabel">50</span>
+              </div>
+              <div class="setting-row">
+                <label>API-Provider</label>
+                <select id="player2ApiProvider">
+                  <option value="ollama">Ollama (lokal)</option>
+                  <option value="openai">OpenAI</option>
+                  <option value="anthropic">Anthropic</option>
+                  <option value="deepseek">DeepSeek</option>
+                </select>
+              </div>
+              <div class="setting-row" id="player2ModelRow" style="display:none;">
+                <label>Ollama Modell</label>
+                <select id="player2Model"></select>
+              </div>
+              <div class="setting-row">
+                <label>API-Key</label>
+                <input type="password" id="player2ApiKey" placeholder="">
+              </div>
+              <div class="setting-row">
+                <label>Stimm-Typ</label>
+                <select id="player2VoiceType">
+                  <option value="preset">Preset</option>
+                  <option value="clone">Voice Clone</option>
+                </select>
+              </div>
+              <div class="setting-row">
+                <label>TTS-Stimme</label>
+                <select id="player2VoiceSelect">
+                  <option value="">— Stimme laden... —</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div><!-- .modal-columns -->
+
+      </div><!-- .modal-body -->
+    </div><!-- .modal-box -->
+  </div><!-- #settingsModal -->
+
+  <script src="js/config.js"></script>
+  <script src="js/soundManager.js"></script>
+  <script src="js/game.js"></script>
+  <script>
+    let game;
+    let availableVoices = [];  // { name, path, type: 'preset'|'clone', transcript }
+
+    // ─── TTS-Stimmen laden ────────────────────────────────────────────────
+    function loadTTSVoices() {
+      fetch(GAME_CONFIG.PROXY_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ endpoint: 'tts_voices' })
+      })
+      .then(r => r.json())
+      .then(data => {
+        availableVoices = data.voices || [];
+        updateVoiceDropdowns();
+      })
+      .catch(() => {
+        availableVoices = [];
+      });
+    }
+
+    function updateVoiceDropdowns() {
+      ['player1', 'player2'].forEach((p, idx) => {
+        const playerNum = idx + 1;
+        const typeEl   = document.getElementById(`${p}VoiceType`);
+        const selectEl = document.getElementById(`${p}VoiceSelect`);
+        if (!selectEl || !typeEl) return;
+
+        const currentType = typeEl.value;
+        const savedVoice  = game && game.playerVoices[playerNum];
+
+        selectEl.innerHTML = '<option value="">— keine Stimme —</option>';
+
+        availableVoices
+          .filter(v => v.type === currentType)
+          .forEach(v => {
+            const opt = document.createElement('option');
+            opt.value = v.name;
+            opt.textContent = v.name;
+            opt.dataset.path       = v.path || '';
+            opt.dataset.transcript = v.transcript || '';
+            // Gespeicherte Stimme vorauswählen
+            if (savedVoice && savedVoice.type === currentType) {
+              if (currentType === 'preset' && savedVoice.speaker === v.name) opt.selected = true;
+              if (currentType === 'clone'  && savedVoice.ref_audio === v.path) opt.selected = true;
+            }
+            selectEl.appendChild(opt);
+          });
+      });
+    }
+
+    // ─── Ollama-Modelle laden ─────────────────────────────────────────────
+    function loadOllamaModelDropdowns() {
+      fetch(GAME_CONFIG.PROXY_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ endpoint: 'ollama_models' })
+      })
+      .then(r => r.json())
+      .then(data => {
+        const models = data.models || [];
+        ['player1', 'player2'].forEach(player => {
+          const select = document.getElementById(player + 'Model');
+          if (!select) return;
+          const saved = (game && game.state.settings[player].model) || GAME_CONFIG.OLLAMA_MODEL;
+          select.innerHTML = '';
+          models.forEach(m => {
+            const opt = document.createElement('option');
+            opt.value = m.name;
+            opt.textContent = m.name;
+            if (m.name === saved) opt.selected = true;
+            select.appendChild(opt);
+          });
+          if (!select.value && models.length > 0) select.value = models[0].name;
+          if (game && select.value) game.state.settings[player].model = select.value;
+        });
+      })
+      .catch(() => {
+        ['player1', 'player2'].forEach(player => {
+          const select = document.getElementById(player + 'Model');
+          if (!select || select.options.length > 0) return;
+          const opt = document.createElement('option');
+          opt.value = GAME_CONFIG.OLLAMA_MODEL;
+          opt.textContent = GAME_CONFIG.OLLAMA_MODEL;
+          select.appendChild(opt);
+        });
+      });
+    }
+
+    function updateModelRowVisibility() {
+      ['player1', 'player2'].forEach(player => {
+        const provider = document.getElementById(player + 'ApiProvider').value;
+        const row = document.getElementById(player + 'ModelRow');
+        if (!row) return;
+        if (provider === 'ollama') {
+          row.style.display = 'flex';
+          const select = document.getElementById(player + 'Model');
+          if (select && select.options.length === 0) loadOllamaModelDropdowns();
+        } else {
+          row.style.display = 'none';
+        }
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      game = new Game();
+      game.updateUI();
+      game.updateSettingsUI();
+
+      updateModelRowVisibility();
+      loadOllamaModelDropdowns();
+      loadTTSVoices();
+
+      // ─── Regelwerk-Modal ──────────────────────────────────────────────
+      const rulesModal = document.getElementById('rulesModal');
+      document.getElementById('btnOpenRules').addEventListener('click', () => {
+        rulesModal.classList.add('open');
+      });
+      document.getElementById('btnCloseRules').addEventListener('click', () => {
+        rulesModal.classList.remove('open');
+      });
+      rulesModal.addEventListener('click', (e) => {
+        if (e.target === rulesModal) rulesModal.classList.remove('open');
+      });
+
+      // ─── Einstellungs-Modal ───────────────────────────────────────────
+      const settingsModal = document.getElementById('settingsModal');
+      document.getElementById('btnOpenSettings').addEventListener('click', () => {
+        settingsModal.classList.add('open');
+      });
+      document.getElementById('btnCloseSettings').addEventListener('click', () => {
+        game.saveSettingsFromUI();
+        settingsModal.classList.remove('open');
+      });
+      // Klick auf Hintergrund schließt Modal
+      settingsModal.addEventListener('click', (e) => {
+        if (e.target === settingsModal) {
+          game.saveSettingsFromUI();
+          settingsModal.classList.remove('open');
+        }
+      });
+
+      document.getElementById('btnStart').addEventListener('click', () => {
+        game.saveSettingsFromUI();
+        game.start();
+      });
+
+      document.getElementById('btnPause').addEventListener('click', () => game.pause());
+      document.getElementById('btnReset').addEventListener('click', () => {
+        document.getElementById('endOverlay').style.display = 'none';
+        game.reset();
+      });
+
+      document.getElementById('toggleRaw').addEventListener('click', () => game.toggleRawData());
+
+      ['player1Strategic', 'player1Verbal', 'player2Strategic', 'player2Verbal'].forEach(id => {
+        document.getElementById(id).addEventListener('input', () => {
+          game.saveSettingsFromUI();
+          game.updateSettingsUI();
+        });
+      });
+
+      ['player1ApiProvider', 'player2ApiProvider'].forEach(id => {
+        document.getElementById(id).addEventListener('change', () => {
+          game.saveSettingsFromUI();
+          updateModelRowVisibility();
+        });
+      });
+
+      ['player1Model', 'player2Model'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('change', () => game.saveSettingsFromUI());
+      });
+
+      // Stimm-Typ-Wechsel aktualisiert die Dropdown-Optionen
+      ['player1VoiceType', 'player2VoiceType'].forEach(id => {
+        document.getElementById(id).addEventListener('change', () => {
+          updateVoiceDropdowns();
+          game.saveSettingsFromUI();
+        });
+      });
+
+      ['player1VoiceSelect', 'player2VoiceSelect'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('change', () => game.saveSettingsFromUI());
+      });
+
+      const hasSave = game.loadGameState();
+      if (hasSave) {
+        game.updateUI();
+        game.updateSettingsUI();
+        updateModelRowVisibility();
+        game.log('Spielstand wiederhergestellt.');
+      }
+    });
+  </script>
+</body>
+</html>
